@@ -18,7 +18,9 @@ build_pypi_package()
     fi
 
     pushd "${PYPI_PROJECT_ROOT}" > /dev/null
-    PYPI_BUILD_DIR="${PYPI_BUILD_DIR}" ${PYTHON} setup.py \
+    # use host path for environment variable (Windows problem)
+    posix_to_host_path "${PYPI_BUILD_DIR}" HOST_PYPI_BUILD_DIR
+    PYPI_BUILD_DIR="${HOST_PYPI_BUILD_DIR}" python setup.py \
             build --build-base="${PYPI_BUILD_DIR}" \
             sdist --dist-dir="${PYPI_DISTR_DIR}" \
             bdist_wheel --dist-dir="${PYPI_DISTR_DIR}" \

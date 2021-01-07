@@ -161,14 +161,14 @@ def generate(srcFile: str = "", moduleName: str = "") -> None:
 def _findJavaExecutable() -> str:
     javaHome = os.getenv("JAVA_HOME", None)
     if javaHome:
-        javaExecutable = os.path.join(javaHome, "bin", "java")
-        if not os.path.isfile(javaExecutable):
+        javaPath = os.path.join(javaHome, "bin")
+        javaExecutable = shutil.which("java", path=javaPath)
+        if not javaExecutable:
             raise JavaNotFoundException("compiler: Java not found (wrong ${JAVA_HOME})")
     else:
-        foundJava = shutil.which("java")
-        if not foundJava:
+        javaExecutable = shutil.which("java")
+        if not javaExecutable:
             raise JavaNotFoundException("compiler: Java not found (checked ${JAVA_HOME} and ${PATH})")
-        javaExecutable = foundJava
 
     return javaExecutable
 

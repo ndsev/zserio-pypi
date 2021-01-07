@@ -132,7 +132,8 @@ activate_python_virtualenv()
         fi
     else
         if [ -z "${PYTHON_VIRTUALENV_ACTIVATE}" ] ; then
-            "${PYTHON}" -m virtualenv -p "${PYTHON}" "${PYTHON_VIRTUALENV_ROOT}"
+            # 'which is' necessary for Windows if 'exe' extension is not specified
+            "${PYTHON}" -m virtualenv -p "`which "${PYTHON}"`" "${PYTHON_VIRTUALENV_ROOT}"
             if [ $? -ne 0 ] ; then
                 stderr_echo "Failed to create virtualenv!"
                 return 1
@@ -338,4 +339,101 @@ run_mypy()
     echo
 
     return 0
+}
+
+# Determines the current host platform.
+#
+# Returns one of the supported platforms:
+# ubuntu32, ubuntu64, windows32, windows64
+get_host_platform()
+{
+    exit_if_argc_ne $# 1
+    local HOST_PLATFORM_OUT="$1"; shift
+
+    local OS=`uname -s`
+    local HOST=""
+    case "${OS}" in
+    Linux)
+        HOST="ubuntu"
+        ;;
+    MINGW*)
+        HOST="windows"
+        ;;
+    *)
+        stderr_echo "uname returned unsupported OS!"
+        return 1
+        ;;
+    esac
+
+    if [ "${HOST}" = "windows" ] ; then
+        # can't use uname on windows - MSYS always says it's i686
+        local CURRENT_ARCH
+        CURRENT_ARCH=`wmic OS get OSArchitecture 2> /dev/null`
+        if [ $? -ne 0 ] ; then
+            # wmic failed, assume it's Windows XP 32bit
+            NATIVE_TARGET="windows32"
+        else
+            case "${CURRENT_ARCH}" in
+            *64-bit*)
+                NATIVE_TARGET="windows64"
+                ;;
+            *32-bit*)
+                NATIVE_TARGET="windows32"
+                ;;
+            *)
+                stderr_echo "wmic returned unsupported architecture!"
+                return 1
+            esac
+        fi
+    else
+        local CURRENT_ARCH=`uname -m`
+        case "${CURRENT_ARCH}" in
+        x86_64)
+            NATIVE_TARGET="${HOST}64"
+            ;;
+        i686)
+            NATIVE_TARGET="${HOST}32"
+            ;;
+        *)
+            stderr_echo "unname returned unsupported architecture!"
+            return 1
+        esac
+    fi
+
+    eval ${HOST_PLATFORM_OUT}="${NATIVE_TARGET}"
+
+    return 0
+}
+
+# Returns path according to the current host.
+#
+# On Linux the given path is unchanged, on Windows the path is converted to windows path.
+posix_to_host_path()
+{
+    exit_if_argc_lt $# 2
+    local POSIX_PATH="$1"; shift
+    local HOST_PATH_OUT="$1"; shift
+    local DISABLE_SLASHES_CONVERSION=0
+    if [ $# -ne 0 ] ; then
+        DISABLE_SLASHES_CONVERSION="$1"; shift # optional, default is false
+    fi
+
+    local HOST_PLATFORM
+    get_host_platform HOST_PLATFORM
+    if [[ "${HOST_PLATFORM}" == "windows"* ]] ; then
+        # change drive specification in case of full path, e.g. '/d/...' to 'd:/...'
+        local SEARCH_PATTERN="/?/"
+        if [ "${POSIX_PATH}" != "${POSIX_PATH/${SEARCH_PATTERN}/}" ] ; then
+            POSIX_PATH="${POSIX_PATH:1:1}:${POSIX_PATH:2}"
+        fi
+
+        if [ ${DISABLE_SLASHES_CONVERSION} -ne 1 ] ; then
+            # replace all Posix '/' to Windows '\'
+            local SEARCH_PATTERN="/"
+            local REPLACE_PATTERN="\\"
+            POSIX_PATH="${POSIX_PATH//${SEARCH_PATTERN}/${REPLACE_PATTERN}}"
+        fi
+    fi
+
+    eval ${HOST_PATH_OUT}="'${POSIX_PATH}'"
 }

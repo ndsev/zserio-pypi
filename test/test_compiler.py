@@ -16,17 +16,27 @@ class CompilerTest(unittest.TestCase):
         self.assertEqual(1, completedProcess.returncode)
 
     def testJavaHomeNotFound(self):
+        javaHomeExists = "JAVA_HOME" in os.environ
+        if javaHomeExists:
+            javaHome = os.environ["JAVA_HOME"]
         os.environ["JAVA_HOME"] = "wrong_path"
         with self.assertRaises(JavaNotFoundException):
             runCompiler(["--help"])
-        del os.environ["JAVA_HOME"]
+        if javaHomeExists:
+            os.environ["JAVA_HOME"] = javaHome
 
     def testJavaOnPathNotFound(self):
+        javaHomeExists = "JAVA_HOME" in os.environ
+        if javaHomeExists:
+            javaHome = os.environ["JAVA_HOME"]
+            del os.environ["JAVA_HOME"]
         path = os.environ["PATH"]
         os.environ["PATH"] = ""
         with self.assertRaises(JavaNotFoundException):
             runCompiler(["--help"])
         os.environ["PATH"] = path
+        if javaHomeExists:
+            os.environ["JAVA_HOME"] = javaHome
 
     def testGenerateCompilationFailure(self):
         with self.assertRaises(subprocess.CalledProcessError):

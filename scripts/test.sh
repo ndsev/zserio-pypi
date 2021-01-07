@@ -18,12 +18,18 @@ test()
         return 1
     fi
     install_zserio_package "${PYPI_DISTR_DIR}" "${TEST_PACKAGE_EXTENSION}"
+    if [ $? -ne 0 ] ; then
+        return 1
+    fi
 
     echo
     echo "Running PyPi tests."
     echo
 
     test_zserio_command
+    if [ $? -ne 0 ] ; then
+        return 1
+    fi
 
     mkdir -p "${TEST_BUILD_DIR}"
     pushd "${TEST_BUILD_DIR}" > /dev/null

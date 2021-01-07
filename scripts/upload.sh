@@ -24,7 +24,7 @@ upload_pypi_package()
         PYPI_REPOSITORY_OPTION="--repository testpypi"
     fi
 
-    ${PYTHON} -m twine upload ${PYPI_REPOSITORY_OPTION} "${PYPI_DISTR_DIR}"/*
+    python -m twine upload ${PYPI_REPOSITORY_OPTION} "${PYPI_DISTR_DIR}"/*
     local UPLOAD_RESULT=$?
     if [ ${UPLOAD_RESULT} -ne 0 ] ; then
         stderr_echo "PyPi package upload failed with result ${UPLOAD_RESULT}!"
