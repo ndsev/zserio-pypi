@@ -36,8 +36,9 @@ test()
 
     local SOURCES_DIR="${PYPI_PROJECT_ROOT}/src"
     local TESTS_DIR="${PYPI_PROJECT_ROOT}/test"
-    local TEST_COVERAGE_PATTERN_SOURCES="*/compiler.py"
-    python -m coverage run --include=${TEST_COVERAGE_PATTERN_SOURCES} -m unittest discover -s "${TESTS_DIR}" -v
+    local TEST_COVERAGE_PATTERN_SOURCES="*compiler.py"
+    python -m coverage run --include="${TEST_COVERAGE_PATTERN_SOURCES}" --omit="*test_*" -m unittest discover \
+        -s "${TESTS_DIR}" -v
     local PYTHON_RESULT=$?
     if [ ${PYTHON_RESULT} -ne 0 ] ; then
         stderr_echo "Running PyPi tests failed with return code ${PYTHON_RESULT}!"
