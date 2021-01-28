@@ -33,9 +33,7 @@ def runCompiler(cmdArgs: typing.List[str], *, captureOutput = True,
     return subprocess.run(zserioCommand, capture_output = captureOutput, check = checkExitCode, text = True)
 
 def generatePython(mainZsFile: str, *, isDefaultPackage: bool = False, zsDir: str = None, genDir: str = None,
-                   topLevelPackage: str = None, withRangeCheckCode: bool = False, withPubsubCode: bool = True,
-                   withServiceCode: bool = True, withSqlCode: bool = True, withWriterCode: bool = True,
-                   extraArgs: typing.List[str] = None) -> typing.Any:
+                   topLevelPackage: str = None, extraArgs: typing.List[str] = None) -> typing.Any:
     """
     Generates Python sources by running zserio compiler.
 
@@ -49,15 +47,13 @@ def generatePython(mainZsFile: str, *, isDefaultPackage: bool = False, zsDir: st
 
     Example using implicit imported API:
         ```
-        applApi = generatePython("test/structure.zs", zsDir = "zs", genDir = "gen", topLevelPackage = "appl",
-                                 withRangeCheckCode = True)
+        applApi = generatePython("test/structure.zs", zsDir = "zs", genDir = "gen", topLevelPackage = "appl")
         testStructure = applApi.test.structure.TestStructure()
         ```
 
     Example using explicit import:
         ```
-        generatePython("test/structure.zs", zsDir = "zs", genDir = "gen", topLevelPackage = "appl",
-                       withRangeCheckCode = True)
+        generatePython("test/structure.zs", zsDir = "zs", genDir = "gen", topLevelPackage = "appl")
         structureModule = importlib.import_module("appl.test.structure.TestStructure")
         testStructure = structureModule.TestStructure()
         ```
@@ -67,14 +63,7 @@ def generatePython(mainZsFile: str, *, isDefaultPackage: bool = False, zsDir: st
     :param zsDir: Zserio source file directory ('-src' command line option).
     :param genDir: Directory where to generate Python sources ('-python <dir>' command line option).
     :param topLevelPackage: Top level package for compilation ('-setTopLevelPackage <pkg>' command line option).
-    :param withRangeCheckCode: True to generate range check code ('-withRangeCheckCode' command line option).
-    :param withPubsubCode: True to generate pubsub code ('-withPubsubCode' command line option).
-    :param withServiceCode: True to generate service code ('-withServiceCode' command line option).
-    :param withSqlCode: True to generate SQL code ('-withSqlCode' command line option).
-    :param withWriterCode: True to generate writer code ('-withWriterCode' command line option).
     :param extraArgs: List of extra command line options.
-    :param captureOutput: True to capture stdout and stderr.
-    :param checkExitCode: True to raise a subprocess.CalledProcessError exception if the zserio compiler fails.
     :returns: Imported api module of generated Python sources.
     :raises: JavaNotFoundException: If Java is not found.
     :raises: subprocess.CalledProcessError: If calling zserio compiler process failed.
@@ -94,16 +83,6 @@ def generatePython(mainZsFile: str, *, isDefaultPackage: bool = False, zsDir: st
 
     if topLevelPackage is not None:
         cmdArgs += ["-setTopLevelPackage", topLevelPackage]
-    if withRangeCheckCode:
-        cmdArgs += ["-withRangeCheckCode"]
-    if not withPubsubCode:
-        cmdArgs += ["-withoutPubsubCode"]
-    if not withServiceCode:
-        cmdArgs += ["-withoutServiceCode"]
-    if not withSqlCode:
-        cmdArgs += ["-withoutSqlCode"]
-    if not withWriterCode:
-        cmdArgs += ["-withoutWriterCode"]
     if extraArgs is not None:
         cmdArgs += extraArgs
 

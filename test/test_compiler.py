@@ -24,6 +24,8 @@ class CompilerTest(unittest.TestCase):
             runCompiler(["--help"])
         if javaHomeExists:
             os.environ["JAVA_HOME"] = javaHome
+        else:
+            del os.environ["JAVA_HOME"]
 
     def testJavaOnPathNotFound(self):
         javaHomeExists = "JAVA_HOME" in os.environ
@@ -66,7 +68,7 @@ class CompilerTest(unittest.TestCase):
         buildDir = os.path.join(self._getBuildTestDir(), "generate_python_main_zs_with_path")
         genDir = os.path.join(buildDir, "gen")
         mainZsFile = os.path.join("company", "main", "structure_with_path.zs")
-        companyApi = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir, withRangeCheckCode = True)
+        companyApi = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir)
 
         testStructure = companyApi.main.structure_with_path.TestStructure()
         self.assertEqual(0, testStructure.getValue())
@@ -80,7 +82,7 @@ class CompilerTest(unittest.TestCase):
         buildDir = os.path.join(self._getBuildTestDir(), "generate_python_main_zs_without_path")
         genDir = os.path.join(buildDir, "gen")
         mainZsFile = "structure_without_path.zs"
-        api = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir, withRangeCheckCode = True)
+        api = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir)
 
         testStructure = api.TestStructure()
         self.assertEqual(0, testStructure.getValue())
@@ -96,9 +98,8 @@ class CompilerTest(unittest.TestCase):
         mainZsFile = "structure_without_path.zs"
         # "top_level_package.main" must be unique not to mix paths in python system path
         topLevelPackageApi = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir,
-                                            topLevelPackage = "top_level_package.main", withPubsubCode = False,
-                                            withServiceCode = False, withSqlCode = False,
-                                            withWriterCode = False, extraArgs = [])
+                                            topLevelPackage = "top_level_package.main",
+                                            extraArgs = ["-withoutPubsubCode", "-withoutServiceCode"])
 
         testStructure = topLevelPackageApi.main.structure_without_path.TestStructure()
         self.assertEqual(0, testStructure.getValue())
