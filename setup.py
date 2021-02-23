@@ -114,7 +114,7 @@ setuptools.setup(
         'console_scripts': ['zserio=zserio.__main__:main']
     },
 
-    python_requires='>=3.5',
+    python_requires='>=3.8',
 
     license = "BSD-3 Clause",
     classifiers=[
