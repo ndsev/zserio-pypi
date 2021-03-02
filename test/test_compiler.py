@@ -4,152 +4,154 @@ import distutils.dir_util
 import importlib
 import subprocess
 
-from zserio.compiler import JavaNotFoundException, runCompiler, generatePython, generate
+from zserio.compiler import JavaNotFoundException, run_compiler, generate
 
 class CompilerTest(unittest.TestCase):
 
-    def testRunCompiler(self):
-        completedProcess = runCompiler(["--help"])
-        self.assertEqual(0, completedProcess.returncode)
+    def test_run_compiler(self):
+        completed_process = run_compiler(["--help"])
+        self.assertEqual(0, completed_process.returncode)
 
-        completedProcess = runCompiler([])
-        self.assertEqual(1, completedProcess.returncode)
+        completed_process = run_compiler([])
+        self.assertEqual(1, completed_process.returncode)
 
-    def testJavaHomeNotFound(self):
-        javaHomeExists = "JAVA_HOME" in os.environ
-        if javaHomeExists:
-            javaHome = os.environ["JAVA_HOME"]
+    def test_java_home_notfound(self):
+        java_home_exists = "JAVA_HOME" in os.environ
+        if java_home_exists:
+            java_home = os.environ["JAVA_HOME"]
         os.environ["JAVA_HOME"] = "wrong_path"
         with self.assertRaises(JavaNotFoundException):
-            runCompiler(["--help"])
-        if javaHomeExists:
-            os.environ["JAVA_HOME"] = javaHome
+            run_compiler(["--help"])
+        if java_home_exists:
+            os.environ["JAVA_HOME"] = java_home
         else:
             del os.environ["JAVA_HOME"]
 
-    def testJavaOnPathNotFound(self):
-        javaHomeExists = "JAVA_HOME" in os.environ
-        if javaHomeExists:
-            javaHome = os.environ["JAVA_HOME"]
+    def test_java_on_path_notfound(self):
+        java_home_exists = "JAVA_HOME" in os.environ
+        if java_home_exists:
+            java_home = os.environ["JAVA_HOME"]
             del os.environ["JAVA_HOME"]
         path = os.environ["PATH"]
         os.environ["PATH"] = ""
         with self.assertRaises(JavaNotFoundException):
-            runCompiler(["--help"])
+            run_compiler(["--help"])
         os.environ["PATH"] = path
-        if javaHomeExists:
-            os.environ["JAVA_HOME"] = javaHome
+        if java_home_exists:
+            os.environ["JAVA_HOME"] = java_home
 
-    def testGenerateCompilationFailure(self):
+    def test_generate_compilation_failure(self):
         with self.assertRaises(subprocess.CalledProcessError):
-            generatePython("invalid_source.zs")
+            generate("invalid_source.zs")
 
-    def testGeneratePythonDefaultPackage(self):
-        zsDir = os.path.join(self._getTestZsDir(), "default_package")
-        buildDir = os.path.join(self._getBuildTestDir(), "generate_python_default_package")
-        testZsDir = os.path.join(buildDir, "zs")
-        distutils.dir_util.copy_tree(zsDir, testZsDir)
-        genDir = os.path.join(buildDir, "gen")
-        mainZsFile = "structure_default.zs"
-        currentDir = os.getcwd()
-        os.chdir(testZsDir)
-        api = generatePython(mainZsFile, isDefaultPackage = True, genDir = genDir)
-        os.chdir(currentDir)
+    def test_generate_default_package(self):
+        zs_dir = os.path.join(self._get_test_zs_dir(), "default_package")
+        build_dir = os.path.join(self._get_build_test_dir(), "generate_default_package")
+        test_zs_dir = os.path.join(build_dir, "zs")
+        distutils.dir_util.copy_tree(zs_dir, test_zs_dir)
+        gen_dir = os.path.join(build_dir, "gen")
+        main_zs_file = "structure_default.zs"
+        current_dir = os.getcwd()
+        os.chdir(test_zs_dir)
+        api = generate(main_zs_file, is_default_package = True, gen_dir = gen_dir)
+        os.chdir(current_dir)
 
-        testStructure = api.TestStructure()
-        self.assertEqual(0, testStructure.getValue())
+        test_structure = api.TestStructure()
+        self.assertEqual(0, test_structure.getValue())
 
-        testStructureModule = importlib.import_module("TestStructure")
-        importedTestStructure = testStructureModule.TestStructure()
-        self.assertEqual(0, importedTestStructure.getValue())
+        test_module = importlib.import_module("TestStructure")
+        imported_test_structure = test_module.TestStructure()
+        self.assertEqual(0, imported_test_structure.getValue())
 
-    def testGeneratePythonMainZsWithPath(self):
-        zsDir = os.path.join(self._getTestZsDir(), "main_zs_with_path")
-        buildDir = os.path.join(self._getBuildTestDir(), "generate_python_main_zs_with_path")
-        genDir = os.path.join(buildDir, "gen")
-        mainZsFile = os.path.join("company", "main", "structure_with_path.zs")
-        companyApi = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir)
+    def test_generate_main_zs_with_path(self):
+        zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_with_path")
+        build_dir = os.path.join(self._get_build_test_dir(), "generate_main_zs_with_path")
+        gen_dir = os.path.join(build_dir, "gen")
+        main_zs_file = os.path.join("company", "main", "structure_with_path.zs")
+        company_api = generate(main_zs_file, zs_dir = zs_dir, gen_dir = gen_dir)
 
-        testStructure = companyApi.main.structure_with_path.TestStructure()
-        self.assertEqual(0, testStructure.getValue())
+        test_structure = company_api.main.structure_with_path.TestStructure()
+        self.assertEqual(0, test_structure.getValue())
 
-        testStructureModule = importlib.import_module("company.main.structure_with_path.TestStructure")
-        importedTestStructure = testStructureModule.TestStructure()
-        self.assertEqual(0, importedTestStructure.getValue())
+        test_module = importlib.import_module("company.main.structure_with_path.TestStructure")
+        imported_test_structure = test_module.TestStructure()
+        self.assertEqual(0, imported_test_structure.getValue())
 
-    def testGeneratePythonMainZsWithoutPath(self):
-        zsDir = os.path.join(self._getTestZsDir(), "main_zs_without_path")
-        buildDir = os.path.join(self._getBuildTestDir(), "generate_python_main_zs_without_path")
-        genDir = os.path.join(buildDir, "gen")
-        mainZsFile = "structure_without_path.zs"
-        api = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir)
+    def test_generate_main_zs_without_path(self):
+        zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
+        build_dir = os.path.join(self._get_build_test_dir(), "generate_main_zs_without_path")
+        gen_dir = os.path.join(build_dir, "gen")
+        main_zs_file = "structure_without_path.zs"
+        api = generate(main_zs_file, zs_dir = zs_dir, gen_dir = gen_dir)
 
-        testStructure = api.TestStructure()
-        self.assertEqual(0, testStructure.getValue())
+        test_structure = api.TestStructure()
+        self.assertEqual(0, test_structure.getValue())
 
-        structureModule = importlib.import_module("structure_without_path.TestStructure")
-        importedTestStructure = structureModule.TestStructure()
-        self.assertEqual(0, importedTestStructure.getValue())
+        test_module = importlib.import_module("structure_without_path.TestStructure")
+        imported_test_structure = test_module.TestStructure()
+        self.assertEqual(0, imported_test_structure.getValue())
 
-    def testGeneratePythonTopLevelPackage(self):
-        zsDir = os.path.join(self._getTestZsDir(), "main_zs_without_path")
-        buildDir = os.path.join(self._getBuildTestDir(), "generate_python_top_level_package")
-        genDir = os.path.join(buildDir, "gen")
-        mainZsFile = "structure_without_path.zs"
+    def test_generate_top_level_package(self):
+        zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
+        build_dir = os.path.join(self._get_build_test_dir(), "generate_top_level_package")
+        gen_dir = os.path.join(build_dir, "gen")
+        main_zs_file = "structure_without_path.zs"
         # "top_level_package.main" must be unique not to mix paths in python system path
-        topLevelPackageApi = generatePython(mainZsFile, zsDir = zsDir, genDir = genDir,
-                                            topLevelPackage = "top_level_package.main",
-                                            extraArgs = ["-withoutPubsubCode", "-withoutServiceCode"])
+        top_level_package_api = generate(main_zs_file, zs_dir = zs_dir, gen_dir = gen_dir,
+                                         top_level_package = "top_level_package.main",
+                                         extra_args = ["-withoutPubsubCode", "-withoutServiceCode"])
 
-        testStructure = topLevelPackageApi.main.structure_without_path.TestStructure()
-        self.assertEqual(0, testStructure.getValue())
+        test_structure = top_level_package_api.main.structure_without_path.TestStructure()
+        self.assertEqual(0, test_structure.getValue())
 
-        structureModule = importlib.import_module("top_level_package.main.structure_without_path.TestStructure")
-        importedTestStructure = structureModule.TestStructure()
-        self.assertEqual(0, importedTestStructure.getValue())
+        test_module = importlib.import_module("top_level_package.main.structure_without_path.TestStructure")
+        imported_test_structure = test_module.TestStructure()
+        self.assertEqual(0, imported_test_structure.getValue())
 
-    def testGeneratePythonWithoutGenDir(self):
-        zsDir = os.path.join(self._getTestZsDir(), "main_zs_without_path")
-        buildDir = os.path.join(self._getBuildTestDir(), "generate_python_without_gen_dir")
-        testZsDir = os.path.join(buildDir, "zs")
-        distutils.dir_util.copy_tree(zsDir, testZsDir)
-        mainZsFile = "structure_without_path.zs"
-        currentDir = os.getcwd()
-        os.chdir(testZsDir)
+    def test_generate_without_gen_dir(self):
+        zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
+        build_dir = os.path.join(self._get_build_test_dir(), "generate_without_gen_dir")
+        test_zs_dir = os.path.join(build_dir, "zs")
+        distutils.dir_util.copy_tree(zs_dir, test_zs_dir)
+        main_zs_file = "structure_without_path.zs"
+        current_dir = os.getcwd()
+        os.chdir(test_zs_dir)
         # "without_gen_dir.main" must be unique not to mix paths in python system path
-        withoutGenDirApi = generatePython(mainZsFile, topLevelPackage = "without_gen_dir.main")
-        os.chdir(currentDir)
+        without_gen_dir_api = generate(main_zs_file, top_level_package = "without_gen_dir.main")
+        os.chdir(current_dir)
 
-        testStructure = withoutGenDirApi.main.structure_without_path.TestStructure()
-        self.assertEqual(0, testStructure.getValue())
+        test_structure = without_gen_dir_api.main.structure_without_path.TestStructure()
+        self.assertEqual(0, test_structure.getValue())
 
-        testStructureModule = importlib.import_module(
-            "without_gen_dir.main.structure_without_path.TestStructure")
-        importedTestStructure = testStructureModule.TestStructure()
-        self.assertEqual(0, importedTestStructure.getValue())
+        test_module = importlib.import_module("without_gen_dir.main.structure_without_path.TestStructure")
+        imported_test_structure = test_module.TestStructure()
+        self.assertEqual(0, imported_test_structure.getValue())
 
-    def testGenerate(self):
-        zsDir = os.path.join(self._getTestZsDir(), "main_zs_without_path")
-        buildDir = os.path.join(self._getBuildTestDir(), "generate")
-        testZsDir = os.path.join(buildDir, "zs")
-        distutils.dir_util.copy_tree(zsDir, testZsDir)
-        zsFile = os.path.join(testZsDir, "structure_without_path.zs")
-        generate(zsFile, "generate")
+    def test_generate_without_gen_dir_with_zs_dir(self):
+        zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
+        build_dir = os.path.join(self._get_build_test_dir(), "generate_without_gen_dir_with_zs_dir")
+        test_zs_dir = os.path.join(build_dir, "zs")
+        distutils.dir_util.copy_tree(zs_dir, test_zs_dir)
+        main_zs_file = "structure_without_path.zs"
+        api = generate(main_zs_file, zs_dir=test_zs_dir)
 
-        testStructureModule = importlib.import_module("generate.structure_without_path.TestStructure")
-        testStructure = testStructureModule.TestStructure()
-        self.assertEqual(0, testStructure.getValue())
+        test_structure = api.TestStructure()
+        self.assertEqual(0, test_structure.getValue())
 
-    @staticmethod
-    def _getBuildTestDir():
-        testDir = os.path.dirname(os.path.abspath(__file__))
-        testZsDir = os.path.join(testDir, "..", "build", "test")
-
-        return testZsDir
+        test_module = importlib.import_module("structure_without_path.TestStructure")
+        imported_test_structure = test_module.TestStructure()
+        self.assertEqual(0, imported_test_structure.getValue())
 
     @staticmethod
-    def _getTestZsDir():
-        testDir = os.path.dirname(os.path.abspath(__file__))
-        zsDir = os.path.join(testDir, "zs")
+    def _get_build_test_dir():
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        test_zs_dir = os.path.join(test_dir, "..", "build", "test")
 
-        return zsDir
+        return test_zs_dir
+
+    @staticmethod
+    def _get_test_zs_dir():
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        zs_dir = os.path.join(test_dir, "zs")
+
+        return zs_dir

@@ -14,26 +14,26 @@ class JavaNotFoundException(Exception):
     Exception thrown if Java executable has been not found.
     """
 
-def runCompiler(cmdArgs: typing.List[str], *, captureOutput = True,
-                checkExitCode = False) -> subprocess.CompletedProcess:
+def run_compiler(cmd_args: typing.List[str], *, capture_output = True,
+                 check_exit_code = False) -> subprocess.CompletedProcess:
     """
     Runs zserio compiler using jar file stored in the zserio pip package.
 
-    :param cmdArgs: List of strings which represents zserio command line arguments.
-    :param captureOutput: True to capture stdout and stderr.
-    :param checkExitCode: True to raise a subprocess.CalledProcessError exception if the zserio compiler fails.
+    :param cmd_args: List of strings which represents zserio command line arguments.
+    :param capture_output: True to capture stdout and stderr.
+    :param check_exit_code: True to raise a subprocess.CalledProcessError exception if zserio compiler fails.
     :returns: subprocess.CompletedProcess instance returned from subprocess.run() method.
     :raises JavaNotFoundException: If Java is not found.
     """
 
-    javaExectuable = _findJavaExecutable()
-    zserioCommand = [javaExectuable, "-jar", ZSERIO_JAR_FILE]
-    zserioCommand[len(zserioCommand):] = cmdArgs
+    java_executable = _find_java_executable()
+    zserio_command = [java_executable, "-jar", ZSERIO_JAR_FILE]
+    zserio_command[len(zserio_command):] = cmd_args
 
-    return subprocess.run(zserioCommand, capture_output = captureOutput, check = checkExitCode, text = True)
+    return subprocess.run(zserio_command, capture_output = capture_output, check = check_exit_code, text = True)
 
-def generatePython(mainZsFile: str, *, isDefaultPackage: bool = False, zsDir: str = None, genDir: str = None,
-                   topLevelPackage: str = None, extraArgs: typing.List[str] = None) -> typing.Any:
+def generate(main_zs_file: str, *, is_default_package: bool = False, zs_dir: str = None, gen_dir: str = None,
+             top_level_package: str = None, extra_args: typing.List[str] = None) -> typing.Any:
     """
     Generates Python sources by running zserio compiler.
 
@@ -47,127 +47,80 @@ def generatePython(mainZsFile: str, *, isDefaultPackage: bool = False, zsDir: st
 
     Example using implicit imported API:
         ```
-        applApi = generatePython("test/structure.zs", zsDir = "zs", genDir = "gen", topLevelPackage = "appl")
-        testStructure = applApi.test.structure.TestStructure()
+        appl_api = generate("test/structure.zs", zs_dir = "zs", gen_dir = "gen", top_level_package = "appl")
+        test_structure = appl_api.test.structure.TestStructure()
         ```
 
     Example using explicit import:
         ```
-        generatePython("test/structure.zs", zsDir = "zs", genDir = "gen", topLevelPackage = "appl")
-        structureModule = importlib.import_module("appl.test.structure.TestStructure")
-        testStructure = structureModule.TestStructure()
+        generate("test/structure.zs", zs_dir = "zs", gen_dir = "gen", top_level_package = "appl")
+        structure_module = importlib.import_module("appl.test.structure.TestStructure")
+        test_structure = structure_module.TestStructure()
         ```
 
-    :param mainZsFile: Main zserio source file to compile.
-    :param isDefaultPackage: True if Zserio source file is default package.
-    :param zsDir: Zserio source file directory ('-src' command line option).
-    :param genDir: Directory where to generate Python sources ('-python <dir>' command line option).
-    :param topLevelPackage: Top level package for compilation ('-setTopLevelPackage <pkg>' command line option).
-    :param extraArgs: List of extra command line options.
+    :param main_zs_file: Main zserio source file to compile.
+    :param is_default_package: True if Zserio source file is default package.
+    :param zs_dir: Zserio source file directory ('-src' command line option).
+    :param gen_dir: Directory where to generate Python sources ('-python <dir>' command line option).
+    :param top_level_package: Top level package for compilation ('-setTopLevelPackage <pkg>' cmd line option).
+    :param extra_args: List of extra command line options.
     :returns: Imported api module of generated Python sources.
     :raises: JavaNotFoundException: If Java is not found.
     :raises: subprocess.CalledProcessError: If calling zserio compiler process failed.
     """
 
-    cmdArgs = [mainZsFile]
-    if zsDir is not None:
-        cmdArgs += ["-src", zsDir]
+    cmd_args = [main_zs_file]
+    if zs_dir is not None:
+        cmd_args += ["-src", zs_dir]
 
-    if genDir is not None:
-        pythonDir = genDir
-    elif zsDir is not None:
-        pythonDir = os.path.join(zsDir, ZSERIO_DEFAULT_GEN_DIR_NAME)
+    if gen_dir is not None:
+        python_dir = gen_dir
+    elif zs_dir is not None:
+        python_dir = os.path.join(zs_dir, ZSERIO_DEFAULT_GEN_DIR_NAME)
     else:
-        pythonDir = os.path.join(os.path.dirname(os.path.abspath(mainZsFile)), ZSERIO_DEFAULT_GEN_DIR_NAME)
-    cmdArgs += ["-python", pythonDir]
+        python_dir = os.path.join(os.path.dirname(os.path.abspath(main_zs_file)), ZSERIO_DEFAULT_GEN_DIR_NAME)
+    cmd_args += ["-python", python_dir]
 
-    if topLevelPackage is not None:
-        cmdArgs += ["-setTopLevelPackage", topLevelPackage]
-    if extraArgs is not None:
-        cmdArgs += extraArgs
+    if top_level_package is not None:
+        cmd_args += ["-setTopLevelPackage", top_level_package]
+    if extra_args is not None:
+        cmd_args += extra_args
 
-    runCompiler(cmdArgs, checkExitCode = True)
+    run_compiler(cmd_args, check_exit_code = True)
 
-    return _importApiModule(mainZsFile, isDefaultPackage, pythonDir, topLevelPackage)
+    return _import_api_module(main_zs_file, is_default_package, python_dir, top_level_package)
 
-def generate(srcFile: str = "", moduleName: str = "") -> None:
-    """
-    Generates Python sources by running zserio compiler given main zserio source with full path.
-
-    The generated Python package will be added automatically to the pythonpath.
-
-    This method is DEPRECATED and will be removed in the next release! Please note, that this method
-    works correctly only if main zserio source package contains only one package id (see example below)!
-
-    Example of main zserio file `structure.zs` which does not compile by this method:
-        ```
-        package test.structure;
-
-        struct TestStructure
-        {
-            int32 value;
-        };
-        ```
-
-    The `moduleName` argument allows to set a top-level python module name,
-    under which the generated sources will be placed.
-
-    Examples:
-
-        With top-level package:
-            ```
-            import zserio
-            zserio.generate("myfile.zs", "mypackage")
-            from mypackage.myfile import *
-            ```
-
-        Without top-level package:
-            ```
-            import zserio
-            zserio.generate("myfile.zs")
-            from myfile import *
-            ```
-
-    :param srcFile: Source zserio file.
-    :param moduleName: (Optional) Top-level package directory name.
-    """
-
-    mainZsFile = os.path.basename(srcFile)
-    zsDir = os.path.dirname(os.path.abspath(srcFile))
-
-    generatePython(mainZsFile, zsDir = zsDir, topLevelPackage = moduleName)
-
-def _findJavaExecutable() -> str:
-    javaHome = os.getenv("JAVA_HOME", None)
-    if javaHome:
-        javaPath = os.path.join(javaHome, "bin")
-        javaExecutable = shutil.which("java", path=javaPath)
-        if not javaExecutable:
+def _find_java_executable() -> str:
+    java_home = os.getenv("JAVA_HOME", None)
+    if java_home:
+        java_path = os.path.join(java_home, "bin")
+        java_executable = shutil.which("java", path=java_path)
+        if not java_executable:
             raise JavaNotFoundException("compiler: Java not found (wrong ${JAVA_HOME})")
     else:
-        javaExecutable = shutil.which("java")
-        if not javaExecutable:
+        java_executable = shutil.which("java")
+        if not java_executable:
             raise JavaNotFoundException("compiler: Java not found (checked ${JAVA_HOME} and ${PATH})")
 
-    return javaExecutable
+    return java_executable
 
-def _importApiModule(mainZsFile: str, isDefaultPackage: bool, pythonDir: str,
-                     topLevelPackage: str = None) -> typing.Any:
-    absPythonDir = os.path.abspath(pythonDir)
-    sys.path.append(absPythonDir)
+def _import_api_module(main_zs_file: str, is_default_package: bool, python_dir: str,
+                       top_level_package: str = None) -> typing.Any:
+    abs_python_dir = os.path.abspath(python_dir)
+    sys.path.append(abs_python_dir)
 
-    apiModulePath = "api"
-    if not isDefaultPackage:
+    api_module_path = "api"
+    if not is_default_package:
         # we need to find out the first left most part of path
-        if topLevelPackage is not None:
-            apiModulePathPrefix = topLevelPackage.split(".")[0]
+        if top_level_package is not None:
+            api_module_path_prefix = top_level_package.split(".")[0]
         else:
-            mainZsWithoutExt = os.path.splitext(mainZsFile)[0]
-            apiModulePathPrefix = mainZsWithoutExt.split(os.sep)[0]
+            main_zs_without_ext = os.path.splitext(main_zs_file)[0]
+            api_module_path_prefix = main_zs_without_ext.split(os.sep)[0]
 
-        apiModulePath = apiModulePathPrefix + "." + apiModulePath
+        api_module_path = api_module_path_prefix + "." + api_module_path
 
-    return importlib.import_module(apiModulePath)
+    return importlib.import_module(api_module_path)
 
 ZSERIO_JAR_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "compiler", "zserio.jar")
 ZSERIO_DEFAULT_GEN_DIR_NAME = ".zserio_python_package"

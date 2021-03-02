@@ -15,8 +15,8 @@ def main() -> int:
 
     :returns: Exit value of zserio compiler.
     """
-    completedProcess = zserio.runCompiler(sys.argv[1:], captureOutput = False)
-    sys.exit(completedProcess.returncode)
+    completed_process = zserio.run_compiler(sys.argv[1:], capture_output = False)
+    sys.exit(completed_process.returncode)
 
 if __name__ == "__main__":
     main()

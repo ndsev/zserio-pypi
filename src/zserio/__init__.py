@@ -2,4 +2,4 @@
 Zserio runtime library extension built in PyPi package.
 """
 
-from zserio.compiler import JavaNotFoundException, runCompiler, generatePython, generate
+from zserio.compiler import JavaNotFoundException, run_compiler, generate

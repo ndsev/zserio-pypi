@@ -11,7 +11,7 @@ DEFAULT_BUILD_DIR = os.path.join(ROOT_DIR, "build")
 BUILD_DIR = os.getenv("PYPI_BUILD_DIR", DEFAULT_BUILD_DIR)
 DOWNLOAD_DIR = os.path.join(BUILD_DIR, "download")
 
-def _downloadLatestZserioRelease() -> str:
+def _download_latest_zserio_release() -> str:
     """
     Downloads the latest Zserio release from GitHub.
 
@@ -41,7 +41,7 @@ def _downloadLatestZserioRelease() -> str:
 
     return zserio_version
 
-def _createZserioPyPiPackage():
+def _create_zserio_pypi_package():
     """
     Creates Zserio PyPi package.
 
@@ -72,7 +72,7 @@ def _createZserioPyPiPackage():
 
     return BUILD_DIR
 
-def _createPyPiLongDescription() -> str:
+def _create_pypi_long_description() -> str:
     """
     Creates long description for PyPi package from project's README.md file.
 
@@ -81,29 +81,29 @@ def _createPyPiLongDescription() -> str:
     read_me_file_name = os.path.join(ROOT_DIR, "README.md")
     with open(read_me_file_name, "r", encoding="utf-8") as file:
         read_me = file.read()
-    startIndex = read_me.find("Zserio PyPi package contains")
-    if startIndex == -1:
-        startIndex = 0
-    endIndex = read_me.find("\n## Building")
-    if endIndex == -1:
-        endIndex = len(read_me)
-    long_description = read_me[startIndex:endIndex]
+    start_index = read_me.find("Zserio PyPi package contains")
+    if start_index == -1:
+        start_index = 0
+    end_index = read_me.find("\n## Building")
+    if end_index == -1:
+        end_index = len(read_me)
+    long_description = read_me[start_index:end_index]
 
     return long_description
 
 setuptools.setup(
     name="zserio",
-    version=_downloadLatestZserioRelease(),
+    version=_download_latest_zserio_release(),
     url="https://github.com/ndsev/zserio-pypi",
     author="Navigation Data Standard e.V.",
     author_email="support@nds-association.org",
 
     description="Zserio runtime with compiler.",
-    long_description=_createPyPiLongDescription(),
+    long_description=_create_pypi_long_description(),
     long_description_content_type="text/markdown",
 
     package_dir={
-        '': _createZserioPyPiPackage()
+        '': _create_zserio_pypi_package()
     },
     packages=['zserio'],
     package_data={

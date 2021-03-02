@@ -41,7 +41,7 @@ you will be able to use the generated Python sources by the following python com
 
 ```py
 import appl.api as api
-testStructure = api.TestStructure()
+test_structure = api.TestStructure()
 ```
 
 ## Usage from Python
@@ -62,11 +62,11 @@ following python commands:
 
 ```py
 import zserio
-api = zserio.generatePython("appl.zs", genDir = "gen")
-testStructure = api.TestStructure()
+api = zserio.generate("appl.zs", gen_dir = "gen")
+test_structure = api.TestStructure()
 ```
 
-For convenience, the method `generatePython` returns imported API for generated top level package.
+For convenience, the method `generate` returns imported API for generated top level package.
 
 Alternatively, you can run zserio compiler directly by the following python commands:
 
@@ -74,11 +74,11 @@ Alternatively, you can run zserio compiler directly by the following python comm
 import sys
 import importlib
 import zserio
-completedProcess = zserio.runCompiler(["appl.zs", "-python", "gen"])
-if completedProcess.returncode == 0:
+completed_process = zserio.run_compiler(["appl.zs", "-python", "gen"])
+if completed_process.returncode == 0:
     sys.path.append("gen")
     api = importlib.import_module("appl.api")
-    testStructure = api.TestStructure()
+    test_structure = api.TestStructure()
 ```
 
 ## Building
