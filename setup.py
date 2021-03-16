@@ -20,11 +20,12 @@ def _download_latest_zserio_release() -> str:
     :returns: The latest Zserio release version in string format.
     """
     print("downloading the latest zserio release JSON file", end = "")
-    zserio_release_url = urllib.request.urlopen("https://api.github.com/repos/ndsev/zserio/releases/latest")
+    zserio_release_url = urllib.request.urlopen("https://api.github.com/repos/ndsev/zserio/releases")
     zserio_release_json = json.loads(zserio_release_url.read().decode('utf-8'))
-    zserio_version = zserio_release_json["tag_name"][1:]
-    zserio_bin_zip_url = zserio_release_json["assets"][0]["browser_download_url"]
-    zserio_runtime_libs_zip_url = zserio_release_json["assets"][1]["browser_download_url"]
+    zserio_latest_release_json = zserio_release_json[0]
+    zserio_version = zserio_latest_release_json["tag_name"][1:]
+    zserio_bin_zip_url = zserio_latest_release_json["assets"][0]["browser_download_url"]
+    zserio_runtime_libs_zip_url = zserio_latest_release_json["assets"][1]["browser_download_url"]
     print(" (found zserio version " + zserio_version + ")")
 
     print("downloading the latest zserio binaries")

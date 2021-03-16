@@ -57,11 +57,11 @@ class CompilerTest(unittest.TestCase):
         os.chdir(current_dir)
 
         test_structure = api.TestStructure()
-        self.assertEqual(0, test_structure.getValue())
+        self.assertEqual(0, test_structure.value)
 
-        test_module = importlib.import_module("TestStructure")
+        test_module = importlib.import_module("test_structure")
         imported_test_structure = test_module.TestStructure()
-        self.assertEqual(0, imported_test_structure.getValue())
+        self.assertEqual(0, imported_test_structure.value)
 
     def test_generate_main_zs_with_path(self):
         zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_with_path")
@@ -71,11 +71,11 @@ class CompilerTest(unittest.TestCase):
         company_api = generate(main_zs_file, zs_dir = zs_dir, gen_dir = gen_dir)
 
         test_structure = company_api.main.structure_with_path.TestStructure()
-        self.assertEqual(0, test_structure.getValue())
+        self.assertEqual(0, test_structure.value)
 
-        test_module = importlib.import_module("company.main.structure_with_path.TestStructure")
+        test_module = importlib.import_module("company.main.structure_with_path.test_structure")
         imported_test_structure = test_module.TestStructure()
-        self.assertEqual(0, imported_test_structure.getValue())
+        self.assertEqual(0, imported_test_structure.value)
 
     def test_generate_main_zs_without_path(self):
         zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
@@ -85,11 +85,11 @@ class CompilerTest(unittest.TestCase):
         api = generate(main_zs_file, zs_dir = zs_dir, gen_dir = gen_dir)
 
         test_structure = api.TestStructure()
-        self.assertEqual(0, test_structure.getValue())
+        self.assertEqual(0, test_structure.value)
 
-        test_module = importlib.import_module("structure_without_path.TestStructure")
+        test_module = importlib.import_module("structure_without_path.test_structure")
         imported_test_structure = test_module.TestStructure()
-        self.assertEqual(0, imported_test_structure.getValue())
+        self.assertEqual(0, imported_test_structure.value)
 
     def test_generate_top_level_package(self):
         zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
@@ -102,11 +102,11 @@ class CompilerTest(unittest.TestCase):
                                          extra_args = ["-withoutPubsubCode", "-withoutServiceCode"])
 
         test_structure = top_level_package_api.main.structure_without_path.TestStructure()
-        self.assertEqual(0, test_structure.getValue())
+        self.assertEqual(0, test_structure.value)
 
-        test_module = importlib.import_module("top_level_package.main.structure_without_path.TestStructure")
+        test_module = importlib.import_module("top_level_package.main.structure_without_path.test_structure")
         imported_test_structure = test_module.TestStructure()
-        self.assertEqual(0, imported_test_structure.getValue())
+        self.assertEqual(0, imported_test_structure.value)
 
     def test_generate_without_gen_dir(self):
         zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
@@ -121,11 +121,11 @@ class CompilerTest(unittest.TestCase):
         os.chdir(current_dir)
 
         test_structure = without_gen_dir_api.main.structure_without_path.TestStructure()
-        self.assertEqual(0, test_structure.getValue())
+        self.assertEqual(0, test_structure.value)
 
-        test_module = importlib.import_module("without_gen_dir.main.structure_without_path.TestStructure")
+        test_module = importlib.import_module("without_gen_dir.main.structure_without_path.test_structure")
         imported_test_structure = test_module.TestStructure()
-        self.assertEqual(0, imported_test_structure.getValue())
+        self.assertEqual(0, imported_test_structure.value)
 
     def test_generate_without_gen_dir_with_zs_dir(self):
         zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
@@ -136,11 +136,11 @@ class CompilerTest(unittest.TestCase):
         api = generate(main_zs_file, zs_dir=test_zs_dir)
 
         test_structure = api.TestStructure()
-        self.assertEqual(0, test_structure.getValue())
+        self.assertEqual(0, test_structure.value)
 
-        test_module = importlib.import_module("structure_without_path.TestStructure")
+        test_module = importlib.import_module("structure_without_path.test_structure")
         imported_test_structure = test_module.TestStructure()
-        self.assertEqual(0, imported_test_structure.getValue())
+        self.assertEqual(0, imported_test_structure.value)
 
     @staticmethod
     def _get_build_test_dir():
