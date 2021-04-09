@@ -27,7 +27,7 @@ def run_compiler(cmd_args: typing.List[str], *, capture_output = True,
     """
 
     java_executable = _find_java_executable()
-    zserio_command = [java_executable, "-jar", ZSERIO_JAR_FILE]
+    zserio_command = [java_executable, "-cp", ZSERIO_JAR_FILE, "zserio.tools.ZserioToolPython"]
     zserio_command[len(zserio_command):] = cmd_args
 
     return subprocess.run(zserio_command, capture_output = capture_output, check = check_exit_code, text = True)
