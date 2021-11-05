@@ -66,15 +66,15 @@ test()
     local PYLINT_RCFILE="${SOURCES_DIR}/pylintrc.txt"
     local PYLINT_ARGS=()
     run_pylint "${PYLINT_RCFILE}" PYLINT_ARGS[@] "${SOURCES_DIR}"/zserio/*
-    if [ $? -ne 0 ]; then
+    if [ $? -ne 0 ] ; then
         return 1
     fi
 
     echo "Running pylint on PyPi test sources."
 
     PYLINT_ARGS+=("--disable=missing-docstring")
-    PYTHONPATH="${SOURCES_DIR}" run_pylint "${PYLINT_RCFILE}" PYLINT_ARGS[@] "${TESTS_DIR}"/*
-    if [ $? -ne 0 ]; then
+    PYTHONPATH="${SOURCES_DIR}" run_pylint "${PYLINT_RCFILE}" PYLINT_ARGS[@] "${TESTS_DIR}"/*.py
+    if [ $? -ne 0 ] ; then
         return 1
     fi
 
@@ -83,7 +83,7 @@ test()
     local MYPY_CONFIG_FILE="${SOURCES_DIR}/mypy.ini"
     local MYPY_ARGS=()
     run_mypy "${TEST_BUILD_DIR}" "${MYPY_CONFIG_FILE}" MYPY_ARGS[@] "${SOURCES_DIR}"/zserio/*
-    if [ $? -ne 0 ]; then
+    if [ $? -ne 0 ] ; then
         return 1
     fi
 
