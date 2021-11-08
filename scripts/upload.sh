@@ -24,6 +24,12 @@ upload_pypi_package()
         PYPI_REPOSITORY_OPTION="--repository testpypi"
     fi
 
+    echo
+    echo "The following Zserio packages will be uploaded:"
+    echo -n $'\e[1;33m'
+    ls -1 "${PYPI_DISTR_DIR}"
+    echo $'\e[0m'
+
     python -m twine upload ${PYPI_REPOSITORY_OPTION} "${PYPI_DISTR_DIR}"/*
     local UPLOAD_RESULT=$?
     if [ ${UPLOAD_RESULT} -ne 0 ] ; then
