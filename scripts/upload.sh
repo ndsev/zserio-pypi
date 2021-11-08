@@ -30,7 +30,7 @@ upload_pypi_package()
     ls -1 "${PYPI_DISTR_DIR}"
     echo $'\e[0m'
 
-    python -m twine upload ${PYPI_REPOSITORY_OPTION} "${PYPI_DISTR_DIR}"/*
+    python -m twine upload ${PYPI_REPOSITORY_OPTION} "${PYPI_DISTR_DIR}"/* --skip-existing
     local UPLOAD_RESULT=$?
     if [ ${UPLOAD_RESULT} -ne 0 ] ; then
         stderr_echo "PyPi package upload failed with result ${UPLOAD_RESULT}!"
