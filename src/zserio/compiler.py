@@ -32,8 +32,9 @@ def run_compiler(cmd_args: typing.List[str], *, capture_output = True,
 
     return subprocess.run(zserio_command, capture_output = capture_output, check = check_exit_code, text = True)
 
-def generate(main_zs_file: str, *, is_default_package: bool = False, zs_dir: str = None, gen_dir: str = None,
-             top_level_package: str = None, extra_args: typing.List[str] = None) -> typing.Any:
+def generate(main_zs_file: str, *, is_default_package: bool = False, zs_dir: typing.Optional[str] = None,
+             gen_dir: typing.Optional[str] = None, top_level_package: typing.Optional[str] = None,
+             extra_args: typing.Optional[typing.List[str]] = None) -> typing.Any:
     """
     Generates Python sources by running zserio compiler.
 
@@ -105,7 +106,7 @@ def _find_java_executable() -> str:
     return java_executable
 
 def _import_api_module(main_zs_file: str, is_default_package: bool, python_dir: str,
-                       top_level_package: str = None) -> typing.Any:
+                       top_level_package: typing.Optional[str] = None) -> typing.Any:
     abs_python_dir = os.path.abspath(python_dir)
     sys.path.append(abs_python_dir)
 
