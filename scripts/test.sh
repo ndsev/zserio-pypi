@@ -12,7 +12,7 @@ test()
     local PYPI_DISTR_DIR="$1"; shift
     local TEST_PACKAGE_EXTENSION="$1"; shift
 
-    local TEST_PYTHON_REQUIREMENTS=("coverage>=4.5.1" "pylint>=2.4.4" "mypy>=0.782")
+    local TEST_PYTHON_REQUIREMENTS=("coverage==6.5.0" "pylint==2.12.2" "mypy==0.931")
     activate_python_virtualenv "${TEST_BUILD_DIR}" TEST_PYTHON_REQUIREMENTS[@]
     if [ $? -ne 0 ] ; then
         return 1
