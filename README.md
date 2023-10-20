@@ -1,5 +1,13 @@
 # Zserio PyPi package
 
+[![](https://github.com/ndsev/zserio-pypi/actions/workflows/build_linux.yml/badge.svg)](https://github.com/ndsev/zserio-pypi/actions/workflows/build_linux.yml)
+[![](https://github.com/ndsev/zserio-pypi/actions/workflows/build_windows.yml/badge.svg)](https://github.com/ndsev/zserio-pypi/actions/workflows/build_windows.yml)
+[![](https://img.shields.io/github/watchers/ndsev/zserio-pypi.svg)](https://GitHub.com/ndsev/zserio-pypi/watchers)
+[![](https://img.shields.io/github/forks/ndsev/zserio-pypi.svg)](https://GitHub.com/ndsev/zserio-pypi/network/members)
+[![](https://img.shields.io/github/stars/ndsev/zserio-pypi.svg?color=yellow)](https://GitHub.com/ndsev/zserio-pypi/stargazers)
+
+--------
+
 Zserio PyPi package contains Zserio compiler and Zserio Python runtime. Zserio is serialization framework
 available at [GitHub](http://zserio.org).
 
