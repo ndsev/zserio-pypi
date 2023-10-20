@@ -50,5 +50,5 @@ jobs:
     - name: Archive Zserio PyPi binaries
       uses: actions/upload-artifact@v3
       with:
-        name: zserio-pypi-${{matrix.os}}
+        name: zserio-pypi-${{matrix.os}}-${{matrix.python-version}}
         path: distr/*
