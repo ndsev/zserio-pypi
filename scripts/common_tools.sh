@@ -68,6 +68,8 @@ check_python_version()
 }
 
 # Check python requirements.
+#
+# Note: From Python 3.12, setuptools must be installed.
 check_python_requirements()
 {
     exit_if_argc_ne $# 2

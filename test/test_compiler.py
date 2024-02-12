@@ -1,6 +1,6 @@
 import unittest
 import os
-import distutils.dir_util
+import shutil
 import importlib
 import subprocess
 
@@ -48,7 +48,7 @@ class CompilerTest(unittest.TestCase):
         zs_dir = os.path.join(self._get_test_zs_dir(), "default_package")
         build_dir = os.path.join(self._get_build_test_dir(), "generate_default_package")
         test_zs_dir = os.path.join(build_dir, "zs")
-        distutils.dir_util.copy_tree(zs_dir, test_zs_dir)
+        shutil.copytree(zs_dir, test_zs_dir, dirs_exist_ok = True)
         gen_dir = os.path.join(build_dir, "gen")
         main_zs_file = "structure_default.zs"
         current_dir = os.getcwd()
@@ -112,7 +112,7 @@ class CompilerTest(unittest.TestCase):
         zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
         build_dir = os.path.join(self._get_build_test_dir(), "generate_without_gen_dir")
         test_zs_dir = os.path.join(build_dir, "zs")
-        distutils.dir_util.copy_tree(zs_dir, test_zs_dir)
+        shutil.copytree(zs_dir, test_zs_dir, dirs_exist_ok = True)
         main_zs_file = "structure_without_path.zs"
         current_dir = os.getcwd()
         os.chdir(test_zs_dir)
@@ -131,7 +131,7 @@ class CompilerTest(unittest.TestCase):
         zs_dir = os.path.join(self._get_test_zs_dir(), "main_zs_without_path")
         build_dir = os.path.join(self._get_build_test_dir(), "generate_without_gen_dir_with_zs_dir")
         test_zs_dir = os.path.join(build_dir, "zs")
-        distutils.dir_util.copy_tree(zs_dir, test_zs_dir)
+        shutil.copytree(zs_dir, test_zs_dir, dirs_exist_ok = True)
         main_zs_file = "structure_without_path.zs"
         api = generate(main_zs_file, zs_dir=test_zs_dir)
 

@@ -33,7 +33,7 @@ def _download_latest_zserio_release() -> str:
     print("extracting the latest zserio binaries")
     zserio_bin_zip_file = zipfile.ZipFile(io.BytesIO(zserio_bin_zip.read()), 'r')
     zserio_bin_zip_file.extractall(DOWNLOAD_DIR)
- 
+
     print("downloading the latest zserio runtime")
     zserio_runtime_libs_zip = urllib.request.urlopen(zserio_runtime_libs_zip_url)
     print("extracting the latest zserio runtime")

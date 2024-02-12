@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: ["windows-latest"]
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -37,6 +37,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install virtualenv
+        python -m pip install setuptools # necessary for pkg_resources on Python 3.12
 
     - name: Build Zserio PyPi
       run: scripts/build.sh
