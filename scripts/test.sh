@@ -97,7 +97,7 @@ test_zserio_command()
 {
     echo -ne "Checking 'python -m zserio --version' ... "
     local ZSERIO_VERSION # one-liner local will destroy $? from command substitution
-    ZSERIO_VERSION=$(python -m zserio --version 2>&1)
+    ZSERIO_VERSION=$(python -m zserio --version | grep 'Core' 2>&1)
     local PYTHON_RESULT=$?
     if [ ${PYTHON_RESULT} -ne 0 ] ; then
         stderr_echo "'python -m zserio --version' failed with return code ${PYTHON_RESULT}!"
@@ -106,7 +106,7 @@ test_zserio_command()
     echo "ok (" ${ZSERIO_VERSION} ")"
 
     echo -ne "Checking 'zserio --version'... "
-    ZSERIO_VERSION=$(zserio --version 2>&1)
+    ZSERIO_VERSION=$(zserio --version | grep 'Core' 2>&1)
     local ZSERIO_RESULT=$?
     if [ ${ZSERIO_RESULT} -ne 0 ] ; then
         stderr_echo "'zserio --version' failed with return code ${ZSERIO_RESULT}!"
