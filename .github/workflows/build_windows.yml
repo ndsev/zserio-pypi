@@ -51,7 +51,7 @@ jobs:
       shell: bash
 
     - name: Archive Zserio PyPi binaries
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: zserio-pypi-${{matrix.os}}-${{matrix.python-version}}
         path: distr/*
