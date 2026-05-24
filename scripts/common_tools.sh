@@ -59,8 +59,8 @@ check_python_version()
     local PYTHON_VERSION=$(${PYTHON_BIN} -V 2>&1 | cut -d\  -f 2)
     PYTHON_VERSION=(${PYTHON_VERSION//./ }) # python version as an array
     if [[ ${#PYTHON_VERSION[@]} -lt 2 || ${PYTHON_VERSION[0]} -lt 3 ]] ||
-       [[ ${PYTHON_VERSION[0]} -eq 3 && ${PYTHON_VERSION[1]} -lt 5 ]] ; then
-        stderr_echo "Python 3.5+ is required! Current Python is '$(${PYTHON_BIN} -V 2>&1)'"
+       [[ ${PYTHON_VERSION[0]} -eq 3 && ${PYTHON_VERSION[1]} -lt 8 ]] ; then
+        stderr_echo "Python 3.8+ is required! Current Python is '$(${PYTHON_BIN} -V 2>&1)'"
         return 1
     fi
 
@@ -68,8 +68,6 @@ check_python_version()
 }
 
 # Check python requirements.
-#
-# Note: From Python 3.12, setuptools must be installed.
 check_python_requirements()
 {
     exit_if_argc_ne $# 2
@@ -79,13 +77,48 @@ check_python_requirements()
 
     "${PYTHON_BIN}" << EOF
 try:
+    import re
     import sys
-    import pkg_resources
+    from importlib.metadata import PackageNotFoundError, version
+
+    def parse_requirement(requirement):
+        for operator in ("==", ">="):
+            if operator in requirement:
+                name, required_version = requirement.split(operator, 1)
+                return name.strip(), operator, required_version.strip()
+
+        return requirement.strip(), None, None
+
+    def normalize_version(value):
+        return [
+            (0, int(part)) if part.isdigit() else (1, part.lower())
+            for part in re.split(r"[._+-]", value)
+            if part
+        ]
+
+    def version_at_least(installed_version, required_version):
+        installed_parts = normalize_version(installed_version)
+        required_parts = normalize_version(required_version)
+        length = max(len(installed_parts), len(required_parts))
+        installed_parts += [(0, 0)] * (length - len(installed_parts))
+        required_parts += [(0, 0)] * (length - len(required_parts))
+        return installed_parts >= required_parts
+
     reqs = "${PYTHON_REQUIREMENTS[@]}".split()
-    pkg_resources.require(reqs)
+    for req in reqs:
+        name, operator, required_version = parse_requirement(req)
+        try:
+            installed_version = version(name)
+        except PackageNotFoundError as exc:
+            raise RuntimeError(f"Missing required package: {name}") from exc
+
+        if operator == "==" and installed_version != required_version:
+            raise RuntimeError(f"{name} {installed_version} does not satisfy {req}")
+        if operator == ">=" and not version_at_least(installed_version, required_version):
+            raise RuntimeError(f"{name} {installed_version} does not satisfy {req}")
 except Exception as e:
     print(e, file=sys.stderr)
-    exit(1)
+    sys.exit(1)
 EOF
     if [ $? -ne 0 ] ; then
         stderr_echo "Required python packages are not installed!"
