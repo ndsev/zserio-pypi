@@ -26,7 +26,7 @@ set_global_variables()
         fi
 
         # check that python pip and virtualenv modules are installed
-        local PYTHON_REQUIREMENTS=("virtualenv" "pip")
+        local PYTHON_REQUIREMENTS=("virtualenv" "pip" "packaging")
         check_python_requirements "${PYTHON}" PYTHON_REQUIREMENTS[@]
         if [ $? -ne 0 ] ; then
             return 1
@@ -80,6 +80,7 @@ try:
     import re
     import sys
     from importlib.metadata import PackageNotFoundError, version
+    from packaging.version import parse as parse_version
 
     def parse_requirement(requirement):
         for operator in ("==", ">="):
@@ -88,21 +89,6 @@ try:
                 return name.strip(), operator, required_version.strip()
 
         return requirement.strip(), None, None
-
-    def normalize_version(value):
-        return [
-            (0, int(part)) if part.isdigit() else (1, part.lower())
-            for part in re.split(r"[._+-]", value)
-            if part
-        ]
-
-    def version_at_least(installed_version, required_version):
-        installed_parts = normalize_version(installed_version)
-        required_parts = normalize_version(required_version)
-        length = max(len(installed_parts), len(required_parts))
-        installed_parts += [(0, 0)] * (length - len(installed_parts))
-        required_parts += [(0, 0)] * (length - len(required_parts))
-        return installed_parts >= required_parts
 
     reqs = "${PYTHON_REQUIREMENTS[@]}".split()
     for req in reqs:
@@ -114,7 +100,7 @@ try:
 
         if operator == "==" and installed_version != required_version:
             raise RuntimeError(f"{name} {installed_version} does not satisfy {req}")
-        if operator == ">=" and not version_at_least(installed_version, required_version):
+        if operator == ">=" and parse_version(installed_version) < parse_version(required_version):
             raise RuntimeError(f"{name} {installed_version} does not satisfy {req}")
 except Exception as e:
     print(e, file=sys.stderr)
