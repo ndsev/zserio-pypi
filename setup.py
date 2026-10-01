@@ -92,35 +92,36 @@ def _create_pypi_long_description() -> str:
 
     return long_description
 
-setuptools.setup(
-    name="zserio",
-    version=_download_latest_zserio_release(),
-    url="https://github.com/ndsev/zserio-pypi",
-    author="Navigation Data Standard e.V.",
-    author_email="support@nds-association.org",
+if __name__ == "__main__":
+    setuptools.setup(
+        name="zserio",
+        version=_download_latest_zserio_release(),
+        url="https://github.com/ndsev/zserio-pypi",
+        author="Navigation Data Standard e.V.",
+        author_email="support@nds-association.org",
 
-    description="Zserio runtime with compiler.",
-    long_description=_create_pypi_long_description(),
-    long_description_content_type="text/markdown",
+        description="Zserio runtime with compiler.",
+        long_description=_create_pypi_long_description(),
+        long_description_content_type="text/markdown",
 
-    package_dir={
-        '': _create_zserio_pypi_package()
-    },
-    packages=['zserio'],
-    package_data={
-        'zserio': ['compiler/zserio.jar', 'py.typed']
-    },
+        package_dir={
+            '': _create_zserio_pypi_package()
+        },
+        packages=['zserio'],
+        package_data={
+            'zserio': ['compiler/zserio.jar', 'py.typed']
+        },
 
-    entry_points={
-        'console_scripts': ['zserio=zserio.__main__:main']
-    },
+        entry_points={
+            'console_scripts': ['zserio=zserio.__main__:main']
+        },
 
-    python_requires='>=3.8',
+        python_requires='>=3.8',
 
-    license = "BSD-3 Clause",
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
-        "License :: OSI Approved :: BSD License"
-     ],
-)
+        license = "BSD-3 Clause",
+        classifiers=[
+            "Programming Language :: Python :: 3",
+            "Operating System :: OS Independent",
+            "License :: OSI Approved :: BSD License"
+         ],
+    )
