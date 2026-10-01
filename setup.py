@@ -1,5 +1,7 @@
 import setuptools
 import json
+import re
+import urllib.parse
 import urllib.request
 import zipfile
 import io
@@ -11,32 +13,111 @@ DEFAULT_BUILD_DIR = os.path.join(ROOT_DIR, "build")
 BUILD_DIR = os.getenv("PYPI_BUILD_DIR", DEFAULT_BUILD_DIR)
 DOWNLOAD_DIR = os.path.join(BUILD_DIR, "download")
 
-def _download_latest_zserio_release() -> str:
+ZSERIO_RELEASES_URL = "https://api.github.com/repos/ndsev/zserio/releases"
+ZSERIO_RELEASE_TAG = os.getenv("ZSERIO_RELEASE_TAG", "")
+STABLE_TAG_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+
+def _select_latest_stable_release(releases: list) -> dict:
     """
-    Downloads the latest Zserio release from GitHub.
+    Selects the stable release with the highest version tag.
+
+    Drafts, pre-releases and releases whose tag is not in the form 'vX.Y.Z' are skipped,
+    so the order of the given releases does not matter.
+
+    :param releases: Release JSON objects as returned by GitHub API.
+    :returns: The selected release JSON object.
+    """
+    stable_releases = []
+    for release in releases:
+        if release.get("draft") or release.get("prerelease"):
+            continue
+        match = STABLE_TAG_PATTERN.match(release.get("tag_name", ""))
+        if match:
+            stable_releases.append((tuple(int(part) for part in match.groups()), release))
+    if not stable_releases:
+        raise RuntimeError("no stable zserio release found")
+
+    return max(stable_releases, key=lambda version_release: version_release[0])[1]
+
+def _get_release_version(release: dict) -> str:
+    """
+    Gets the Zserio version from the release tag.
+
+    :param release: Release JSON object as returned by GitHub API.
+    :returns: The release tag without the leading 'v'.
+    """
+    tag_name = release["tag_name"]
+
+    return tag_name[1:] if tag_name.startswith("v") else tag_name
+
+def _select_asset_url(release: dict, asset_name: str) -> str:
+    """
+    Selects the download URL of the release asset with the given name.
+
+    :param release: Release JSON object as returned by GitHub API.
+    :param asset_name: Name of the asset to select.
+    :returns: The download URL of the asset.
+    """
+    for asset in release["assets"]:
+        if asset["name"] == asset_name:
+            return asset["browser_download_url"]
+
+    raise RuntimeError("asset '" + asset_name + "' not found in zserio release " + release["tag_name"])
+
+def _select_asset_urls(release: dict) -> tuple:
+    """
+    Selects the download URLs of the Zserio binaries and the Zserio runtime libraries.
+
+    :param release: Release JSON object as returned by GitHub API.
+    :returns: Tuple of the binaries zip URL and the runtime libraries zip URL.
+    """
+    zserio_version = _get_release_version(release)
+
+    return (_select_asset_url(release, "zserio-" + zserio_version + "-bin.zip"),
+            _select_asset_url(release, "zserio-" + zserio_version + "-runtime-libs.zip"))
+
+def _download_json(url: str):
+    """
+    Downloads and decodes JSON from the given URL.
+
+    :param url: URL to download.
+    :returns: The decoded JSON.
+    """
+    with urllib.request.urlopen(url) as response:
+        return json.loads(response.read().decode('utf-8'))
+
+def _download_zserio_release() -> str:
+    """
+    Downloads the Zserio release from GitHub.
+
+    The release is given by the tag in the ZSERIO_RELEASE_TAG environment variable. If it is not set,
+    the stable release with the highest version is used.
 
     The method extracts downloaded zip files to the DOWNLOAD_DIR as well.
 
-    :returns: The latest Zserio release version in string format.
+    :returns: The downloaded Zserio release version in string format.
     """
-    print("downloading the latest zserio release JSON file", end = "")
-    zserio_release_url = urllib.request.urlopen("https://api.github.com/repos/ndsev/zserio/releases")
-    zserio_release_json = json.loads(zserio_release_url.read().decode('utf-8'))
-    zserio_latest_release_json = zserio_release_json[0]
-    zserio_version = zserio_latest_release_json["tag_name"][1:]
-    zserio_bin_zip_url = zserio_latest_release_json["assets"][0]["browser_download_url"]
-    zserio_runtime_libs_zip_url = zserio_latest_release_json["assets"][1]["browser_download_url"]
+    if ZSERIO_RELEASE_TAG:
+        print("downloading the zserio release JSON file for tag " + ZSERIO_RELEASE_TAG, end = "")
+        zserio_release_json = _download_json(ZSERIO_RELEASES_URL + "/tags/" +
+                                             urllib.parse.quote(ZSERIO_RELEASE_TAG))
+    else:
+        print("downloading the latest zserio release JSON file", end = "")
+        zserio_release_json = _select_latest_stable_release(
+            _download_json(ZSERIO_RELEASES_URL + "?per_page=100"))
+    zserio_version = _get_release_version(zserio_release_json)
+    zserio_bin_zip_url, zserio_runtime_libs_zip_url = _select_asset_urls(zserio_release_json)
     print(" (found zserio version " + zserio_version + ")")
 
-    print("downloading the latest zserio binaries")
+    print("downloading the zserio binaries")
     zserio_bin_zip = urllib.request.urlopen(zserio_bin_zip_url)
-    print("extracting the latest zserio binaries")
+    print("extracting the zserio binaries")
     zserio_bin_zip_file = zipfile.ZipFile(io.BytesIO(zserio_bin_zip.read()), 'r')
     zserio_bin_zip_file.extractall(DOWNLOAD_DIR)
 
-    print("downloading the latest zserio runtime")
+    print("downloading the zserio runtime")
     zserio_runtime_libs_zip = urllib.request.urlopen(zserio_runtime_libs_zip_url)
-    print("extracting the latest zserio runtime")
+    print("extracting the zserio runtime")
     zserio_runtime_libs_zip_file = zipfile.ZipFile(io.BytesIO(zserio_runtime_libs_zip.read()), 'r')
     zserio_runtime_libs_zip_file.extractall(DOWNLOAD_DIR)
 
@@ -95,7 +176,7 @@ def _create_pypi_long_description() -> str:
 if __name__ == "__main__":
     setuptools.setup(
         name="zserio",
-        version=_download_latest_zserio_release(),
+        version=_download_zserio_release(),
         url="https://github.com/ndsev/zserio-pypi",
         author="Navigation Data Standard e.V.",
         author_email="support@nds-association.org",
