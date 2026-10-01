@@ -98,6 +98,16 @@ folder `scripts`:
 scripts/build.sh
 ```
 
+By default, the package is built from the Zserio release with the highest stable version tag (drafts and
+pre-releases are skipped). To build from a specific release, set its tag in the environment variable
+`ZSERIO_RELEASE_TAG`:
+
+```
+ZSERIO_RELEASE_TAG=v2.19.0 scripts/build.sh
+```
+
+The release assets `zserio-<version>-bin.zip` and `zserio-<version>-runtime-libs.zip` are selected by name.
+
 ## Testing
 
 Testing is available by using Bash script `test.sh` located in the project's folder `scripts`:
